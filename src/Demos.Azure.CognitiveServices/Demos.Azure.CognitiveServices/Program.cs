@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Demos.Azure.CognitiveServices
 {
@@ -23,7 +24,20 @@ namespace Demos.Azure.CognitiveServices
             {
                 var websiteScraper = new WebsiteScraper(websiteUri);
                 var imageUriValues = websiteScraper.GetImageUrlsFromWebsite();
-                PrintImageSources(imageUriValues);
+                if (imageUriValues.Any())
+                {
+                    PrintImageSources(imageUriValues);
+
+                    var computerVision = new ComputerVisionFacade();
+                    var cvResult = computerVision.Analyze(imageUriValues.First()).Result;
+
+                    Console.WriteLine(cvResult.ToString(Newtonsoft.Json.Formatting.Indented));
+                    HtmlFileWriter.WriteSingle(imageUriValues.First(), cvResult);
+                }
+                else
+                {
+                    Console.WriteLine("No valid image sources found.");
+                }
             }
 
             Console.WriteLine("Press R to retry or Enter to exit.");
