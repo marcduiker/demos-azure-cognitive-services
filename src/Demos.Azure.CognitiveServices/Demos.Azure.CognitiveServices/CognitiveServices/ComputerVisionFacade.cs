@@ -2,7 +2,6 @@
 using Newtonsoft.Json.Linq;
 using System;
 using System.Net.Http;
-using System.Net.Http.Headers;
 using System.Text;
 using System.Threading.Tasks;
 using System.Web;
@@ -16,6 +15,7 @@ namespace Demos.Azure.CognitiveServices
         private string _region;
         private string _apiKey;
         private HttpClient _httpClient;
+        private string _computerVisionUrl;
 
         public ComputerVisionFacade() : this(REGION, API_KEY)
         {
@@ -27,20 +27,19 @@ namespace Demos.Azure.CognitiveServices
             _apiKey = apiKey;
             _httpClient = new HttpClient();
             _httpClient.DefaultRequestHeaders.Add("Ocp-Apim-Subscription-Key", $"{ _apiKey }");
-            _httpClient.DefaultRequestHeaders.Accept.Clear();
+
+            var queryString = HttpUtility.ParseQueryString(string.Empty);
+            queryString["visualFeatures"] = "Description, Tags, Color, Faces, ImageType";
+            queryString["language"] = "en";
+            _computerVisionUrl = $"https://{ _region }.api.cognitive.microsoft.com/vision/v1.0/analyze?{ queryString }";
         }
 
         public async Task<JToken> Analyze(Uri imageUri)
         {
-            var queryString = HttpUtility.ParseQueryString(string.Empty);
-            queryString["visualFeatures"] = "Description, Tags, Color, Faces, ImageType";
-            queryString["language"] = "en";
-            var uri = $"https://{ _region }.api.cognitive.microsoft.com/vision/v1.0/analyze?" + queryString;
-
             var content = new { url = imageUri.AbsoluteUri };
-            var jsonContent = new StringContent(JsonConvert.SerializeObject(content),Encoding.UTF8, "application/json");
+            var serializedContent = new StringContent(JsonConvert.SerializeObject(content),Encoding.UTF8, "application/json");
 
-            HttpResponseMessage response = await _httpClient.PostAsync(uri, jsonContent);
+            HttpResponseMessage response = await _httpClient.PostAsync(_computerVisionUrl, serializedContent);
             Task<string> stringResponse = response.Content.ReadAsStringAsync();
 
             return JToken.Parse(stringResponse.Result);

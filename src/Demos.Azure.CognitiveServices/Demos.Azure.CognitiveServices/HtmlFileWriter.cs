@@ -13,35 +13,63 @@ namespace Demos.Azure.CognitiveServices
 
         public static void WriteSingle(Uri imageSource, JToken cvResult, string folder = DEFAULT_FOLDER)
         {
-            var caption = (string)cvResult.SelectToken("description.captions[0].text");
             var doc = new HtmlDocument();
             var node = HtmlNode.CreateNode(
-            StartDocument() +
-        $"<h1>{ caption }</h1>" +
-        $"<img src='{ imageSource.AbsoluteUri }'>" + 
-        @"<pre>" +
-        $"{ cvResult.ToString(Formatting.Indented) }" +
-        @"</pre>" +
-        EndDocument()
-    );
+                StartDocument() +
+                GetImageAndCvResult(imageSource, cvResult) +
+                EndDocument());
             doc.DocumentNode.AppendChild(node);
             var fileName = $"{ DateTime.Now.ToString("yyyyMMdd-HHmmss") }-{ Path.GetFileName(imageSource.AbsolutePath) }.html";
             SaveToDisk(doc, fileName, folder);
         }
 
-        public static void WriteMultiple(Dictionary<Uri, JToken> imagesAndCvResults, string folder = DEFAULT_FOLDER)
+        
+
+        public static void WriteMultiple(Dictionary<Uri, JToken> imagesAndCvResults, Uri websiteUri, string folder = DEFAULT_FOLDER)
         {
-            throw new NotImplementedException();
+            var doc = new HtmlDocument();
+            var htmlOutline = HtmlNode.CreateNode(StartDocument() + EndDocument());
+            doc.DocumentNode.AppendChild(htmlOutline);
+            HtmlNode parentNode = doc.DocumentNode.SelectSingleNode("//body");
+            HtmlNode imageNode;
+            HtmlNodeCollection nodeCollection = new HtmlNodeCollection(parentNode);
+            foreach (var imageAndCvResult in imagesAndCvResults)
+            {
+                imageNode = HtmlNode.CreateNode(
+                    GetImageAndCvResult(
+                        imageAndCvResult.Key, 
+                        imageAndCvResult.Value)
+                    );
+                nodeCollection.Add(imageNode);
+            }
+
+            doc.DocumentNode.AppendChildren(nodeCollection);
+            var fileName = $"{ DateTime.Now.ToString("yyyyMMdd-HHmmss") }-{ websiteUri.Host }.html";
+            SaveToDisk(doc, fileName, folder);
         }
 
         private static string StartDocument()
         {
-            return "<html><head /><body>";
+            return "<html><head /><body><h1>Azure Computer Vision Results</h1>";
+        }
+
+        private static string GetImageAndCvResult(Uri imageSource, JToken cvResult)
+        {
+            return  $"<div><h2>{ GetCaption(cvResult) }</h2>" +
+                    $"<img src='{ imageSource.AbsoluteUri }'>" +
+                    @"<pre>" +
+                    $"{ cvResult.ToString(Formatting.Indented) }" +
+                    @"</pre></div>";
         }
 
         private static string EndDocument()
         {
             return "</body></html>";
+        }
+
+        private static string GetCaption(JToken cvResult)
+        {
+            return (string)cvResult.SelectToken("description.captions[0].text");
         }
 
         private static void SaveToDisk(HtmlDocument doc, string fileName, string folder)

@@ -1,6 +1,9 @@
-﻿using System;
+﻿using Newtonsoft.Json.Linq;
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Demos.Azure.CognitiveServices
 {
@@ -16,7 +19,7 @@ namespace Demos.Azure.CognitiveServices
         {
             if (string.IsNullOrWhiteSpace(website))
             {
-                Console.WriteLine("Enter a valid website url:");
+                WriteInfo("Enter a valid website url:");
                 website = Console.ReadLine();
             }
 
@@ -26,21 +29,20 @@ namespace Demos.Azure.CognitiveServices
                 var imageUriValues = websiteScraper.GetImageUrlsFromWebsite();
                 if (imageUriValues.Any())
                 {
-                    PrintImageSources(imageUriValues);
-
-                    var computerVision = new ComputerVisionFacade();
-                    var cvResult = computerVision.Analyze(imageUriValues.First()).Result;
-
-                    Console.WriteLine(cvResult.ToString(Newtonsoft.Json.Formatting.Indented));
-                    HtmlFileWriter.WriteSingle(imageUriValues.First(), cvResult);
+                    var imageResultCollection = AnalyzeImages(imageUriValues).Result;
+                    HtmlFileWriter.WriteMultiple(imageResultCollection, websiteUri);
                 }
                 else
                 {
-                    Console.WriteLine("No valid image sources found.");
+                    WriteError("No valid image sources found.");
                 }
             }
+            else
+            {
+                WriteError($"{ website } is not a valid url.");
+            }
 
-            Console.WriteLine("Press R to retry or Enter to exit.");
+            WriteInfo("Press R to retry or Enter to exit.");
             var keyInfo = Console.ReadKey();
             if (keyInfo.Key == ConsoleKey.R)
             {
@@ -49,12 +51,40 @@ namespace Demos.Azure.CognitiveServices
             }
         }
 
-        private static void PrintImageSources(IEnumerable<Uri> imageUriValues)
+        private static async Task<Dictionary<Uri, JToken>> AnalyzeImages(IEnumerable<Uri> imageUriValues)
         {
+            var computerVision = new ComputerVisionFacade();
+            var imageResultCollection = new Dictionary<Uri, JToken>();
+
             foreach (var imageUri in imageUriValues)
             {
-                Console.WriteLine(imageUri);
+                WriteResult(imageUri.AbsoluteUri);
+                var cvResult = await computerVision.Analyze(imageUri);
+                WriteInfo("Computer Vision result:");
+                WriteResult(cvResult.ToString(Newtonsoft.Json.Formatting.Indented));
+                imageResultCollection.Add(imageUri, cvResult);
+                await Task.Delay(250);
             }
+
+            return imageResultCollection;
+        }
+
+        private static void WriteInfo(string message)
+        {
+            Console.ForegroundColor = ConsoleColor.White;
+            Console.WriteLine(message);
+        }
+
+        private static void WriteResult(string message)
+        {
+            Console.ForegroundColor = ConsoleColor.Green;
+            Console.WriteLine(message);
+        }
+
+        private static void WriteError(string message)
+        {
+            Console.ForegroundColor = ConsoleColor.Red;
+            Console.WriteLine(message);
         }
     }
 }
