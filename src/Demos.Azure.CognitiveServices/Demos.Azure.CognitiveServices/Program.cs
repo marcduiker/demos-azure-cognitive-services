@@ -26,7 +26,7 @@ namespace Demos.Azure.CognitiveServices
 
             if (analysisType == 0)
             {
-                WriteInfo("Perform Image Analysis [1] or OCR [2]?:");
+                WriteInfo("Perform General Image analysis [1], Landmark analysis [2] or OCR [3]?:");
                 analysisType = int.Parse(Console.ReadLine());
             }
 
@@ -62,25 +62,30 @@ namespace Demos.Azure.CognitiveServices
             IEnumerable<Uri> imageUriValues, 
             int analysisType)
         {
-            var computerVision = new ComputerVisionFacade();
             var imageResultCollection = new Dictionary<Uri, JToken>();
-            Func<Uri, Task<JToken>> analysisFunction = null;
+            BaseComputerVision computerVision;
             switch (analysisType)
             {
-                case 1:
-                    analysisFunction = uri => computerVision.ImageAnalysis(uri);
-                    break;
                 case 2:
-                    analysisFunction = uri => computerVision.OcrAnalysis(uri);
+                    computerVision = new LandmarkAnalysis();
+                    break;
+                case 3:
+                    computerVision = new OcrAnalysis();
+                    break;
+                default:
+                    computerVision = new GeneralAnalysis();
                     break;
             }
+
             foreach (var imageUri in imageUriValues)
             {
                 WriteResult(imageUri.AbsoluteUri);
-                var cvResult = await analysisFunction(imageUri);
+                var cvResult = await computerVision.AnalyzeUri(imageUri);
+
                 WriteInfo("Computer Vision result:");
                 WriteResult(cvResult.ToString(Newtonsoft.Json.Formatting.Indented));
                 imageResultCollection.Add(imageUri, cvResult);
+
                 await Task.Delay(250);
             }
 

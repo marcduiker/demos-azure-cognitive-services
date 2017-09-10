@@ -48,10 +48,19 @@ namespace Demos.Azure.CognitiveServices
         private Uri CreateUri(string imageSource)
         {
             Uri.TryCreate(imageSource, UriKind.RelativeOrAbsolute, out Uri uriResult);
+
+            // Ensure absolute image url
             if (!uriResult.IsAbsoluteUri)
             {
                 Uri.TryCreate(_website, uriResult, out uriResult);
             }
+
+            // Strip any querystrings from image url
+            if (uriResult.AbsoluteUri.Contains("?"))
+            {
+                Uri.TryCreate(uriResult.AbsoluteUri.Split('?')[0], UriKind.RelativeOrAbsolute, out uriResult);
+            }
+
             return uriResult;
         }
     }

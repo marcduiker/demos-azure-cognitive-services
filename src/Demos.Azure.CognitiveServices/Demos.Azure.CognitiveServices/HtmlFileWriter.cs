@@ -55,6 +55,7 @@ namespace Demos.Azure.CognitiveServices
         private static string GetImageAndCvResult(Uri imageSource, JToken cvResult)
         {
             return  $"<div><h2>{ GetCaption(cvResult) }</h2>" +
+                    $"<h3>{ imageSource.AbsoluteUri } </h3>" +
                     $"<img src='{ imageSource.AbsoluteUri }'>" +
                     @"<pre>" +
                     $"{ cvResult.ToString(Formatting.Indented) }" +
