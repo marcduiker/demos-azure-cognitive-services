@@ -3,7 +3,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Demos.Azure.CognitiveServices.Facades;
+using Demos.Azure.CognitiveServices.ComputerVision.Operations;
+using Demos.Azure.CognitiveServices.Emotion.Operations;
 
 namespace Demos.Azure.CognitiveServices
 {
@@ -26,7 +27,13 @@ namespace Demos.Azure.CognitiveServices
 
             if (analysisType == 0)
             {
-                WriteInfo("Perform General Image analysis [1], Landmark analysis [2] or OCR [3]?:");
+                WriteInfo("Choose of the following Computer Vision operations:");
+                
+                foreach (var option in GetAnalysisOptions())
+                {
+                    WriteInfo($"[ {option.Key} ] - { option.Value.Item1 }");
+                }
+
                 analysisType = int.Parse(Console.ReadLine());
             }
 
@@ -36,8 +43,10 @@ namespace Demos.Azure.CognitiveServices
                 var imageUriValues = websiteScraper.GetImageUrlsFromWebsite().ToList();
                 if (imageUriValues.Any())
                 {
-                    var imageResultCollection = AnalyzeImages(imageUriValues, analysisType).Result;
-                    HtmlFileWriter.WriteMultiple(imageResultCollection, websiteUri);
+                    var analysisOption = GetAnalysisOptions()[analysisType];
+                    var imageResultCollection = AnalyzeImages(imageUriValues, analysisOption.Item2).Result;
+
+                    HtmlFileWriter.WriteMultiple(imageResultCollection, websiteUri, analysisOption.Item1);
                 }
                 else
                 {
@@ -60,27 +69,14 @@ namespace Demos.Azure.CognitiveServices
 
         private static async Task<Dictionary<Uri, JToken>> AnalyzeImages(
             IEnumerable<Uri> imageUriValues, 
-            int analysisType)
+            BaseCognitiveServicesApiHandler apiHandler)
         {
             var imageResultCollection = new Dictionary<Uri, JToken>();
-            BaseComputerVision computerVision;
-            switch (analysisType)
-            {
-                case 2:
-                    computerVision = new LandmarkAnalysis();
-                    break;
-                case 3:
-                    computerVision = new OcrAnalysis();
-                    break;
-                default:
-                    computerVision = new GeneralAnalysis();
-                    break;
-            }
 
             foreach (var imageUri in imageUriValues)
             {
                 WriteResult(imageUri.AbsoluteUri);
-                var cvResult = await computerVision.AnalyzeUri(imageUri);
+                var cvResult = await apiHandler.AnalyzeUri(imageUri);
 
                 WriteInfo("Computer Vision result:");
                 WriteResult(cvResult.ToString(Newtonsoft.Json.Formatting.Indented));
@@ -108,6 +104,18 @@ namespace Demos.Azure.CognitiveServices
         {
             Console.ForegroundColor = ConsoleColor.Red;
             Console.WriteLine(message);
+        }
+
+        private static Dictionary<int, Tuple<string, BaseCognitiveServicesApiHandler>> GetAnalysisOptions()
+        {
+            return new Dictionary<int, Tuple<string, BaseCognitiveServicesApiHandler>>
+            {
+                { 1, new Tuple<string, BaseCognitiveServicesApiHandler>("General image analysis", new Analyze()) },
+                { 2, new Tuple<string, BaseCognitiveServicesApiHandler>("Descriptions", new Describe()) },
+                { 3, new Tuple<string, BaseCognitiveServicesApiHandler>("OCR", new Ocr()) },
+                { 4, new Tuple<string, BaseCognitiveServicesApiHandler>("Landmark recognition", new Landmark()) },
+                { 5, new Tuple<string, BaseCognitiveServicesApiHandler>("Emotion recognition", new Recognize()) }
+            };
         }
     }
 }

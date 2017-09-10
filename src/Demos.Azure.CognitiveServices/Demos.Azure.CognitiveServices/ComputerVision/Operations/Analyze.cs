@@ -1,15 +1,15 @@
 ﻿using System.Web;
 
-namespace Demos.Azure.CognitiveServices.Facades
+namespace Demos.Azure.CognitiveServices.ComputerVision.Operations
 {
-    public class GeneralAnalysis : BaseComputerVision
+    public class Analyze : BaseComputerVisionApiHandler
     {
-        public GeneralAnalysis()
+        public Analyze()
         {
             var queryString = HttpUtility.ParseQueryString(string.Empty);
             queryString["visualFeatures"] = "Description, Tags, Color, Faces, ImageType";
             queryString["language"] = "en";
-            ComputerVisionUrl = $"https://{ Region }{ BaseCognitiveServicesVisionUrlV1 }analyze?{ queryString }";
+            ApiEndPoint = $"https://{ Region }{ BaseCognitiveServicesVisionUrlV1 }analyze?{ queryString }";
         }
     }
 }

@@ -11,11 +11,11 @@ namespace Demos.Azure.CognitiveServices
     {
         private const string DefaultFolder = @"C:\temp\cv-output";
 
-        public static void WriteSingle(Uri imageSource, JToken cvResult, string folder = DefaultFolder)
+        public static void WriteSingle(Uri imageSource, JToken cvResult, string analysisOption, string folder = DefaultFolder)
         {
             var doc = new HtmlDocument();
             var node = HtmlNode.CreateNode(
-                StartDocument() +
+                StartDocument(analysisOption) +
                 GetImageAndCvResult(imageSource, cvResult) +
                 EndDocument());
             doc.DocumentNode.AppendChild(node);
@@ -23,12 +23,10 @@ namespace Demos.Azure.CognitiveServices
             SaveToDisk(doc, fileName, folder);
         }
 
-        
-
-        public static void WriteMultiple(Dictionary<Uri, JToken> imagesAndCvResults, Uri websiteUri, string folder = DefaultFolder)
+        public static void WriteMultiple(Dictionary<Uri, JToken> imagesAndCvResults, Uri websiteUri, string analysisOption, string folder = DefaultFolder)
         {
             var doc = new HtmlDocument();
-            var htmlOutline = HtmlNode.CreateNode(StartDocument() + EndDocument());
+            var htmlOutline = HtmlNode.CreateNode(StartDocument(analysisOption) + EndDocument());
             doc.DocumentNode.AppendChild(htmlOutline);
             HtmlNode parentNode = doc.DocumentNode.SelectSingleNode("//body");
             HtmlNodeCollection nodeCollection = new HtmlNodeCollection(parentNode);
@@ -47,9 +45,9 @@ namespace Demos.Azure.CognitiveServices
             SaveToDisk(doc, fileName, folder);
         }
 
-        private static string StartDocument()
+        private static string StartDocument(string title)
         {
-            return "<html><head /><body><h1>Azure Computer Vision Results</h1>";
+            return $"<html><head /><body><h1>Azure Cognitive Services Results: { title } </h1>";
         }
 
         private static string GetImageAndCvResult(Uri imageSource, JToken cvResult)
