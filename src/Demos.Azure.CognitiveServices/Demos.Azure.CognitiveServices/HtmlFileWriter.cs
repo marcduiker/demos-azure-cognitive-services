@@ -9,9 +9,9 @@ namespace Demos.Azure.CognitiveServices
 {
     public class HtmlFileWriter
     {
-        private const string DEFAULT_FOLDER = @"C:\temp\cv-output";
+        private const string DefaultFolder = @"C:\temp\cv-output";
 
-        public static void WriteSingle(Uri imageSource, JToken cvResult, string folder = DEFAULT_FOLDER)
+        public static void WriteSingle(Uri imageSource, JToken cvResult, string folder = DefaultFolder)
         {
             var doc = new HtmlDocument();
             var node = HtmlNode.CreateNode(
@@ -19,23 +19,22 @@ namespace Demos.Azure.CognitiveServices
                 GetImageAndCvResult(imageSource, cvResult) +
                 EndDocument());
             doc.DocumentNode.AppendChild(node);
-            var fileName = $"{ DateTime.Now.ToString("yyyyMMdd-HHmmss") }-{ Path.GetFileName(imageSource.AbsolutePath) }.html";
+            var fileName = $"{ DateTime.Now :yyyyMMdd-HHmmss}-{ Path.GetFileName(imageSource.AbsolutePath) }.html";
             SaveToDisk(doc, fileName, folder);
         }
 
         
 
-        public static void WriteMultiple(Dictionary<Uri, JToken> imagesAndCvResults, Uri websiteUri, string folder = DEFAULT_FOLDER)
+        public static void WriteMultiple(Dictionary<Uri, JToken> imagesAndCvResults, Uri websiteUri, string folder = DefaultFolder)
         {
             var doc = new HtmlDocument();
             var htmlOutline = HtmlNode.CreateNode(StartDocument() + EndDocument());
             doc.DocumentNode.AppendChild(htmlOutline);
             HtmlNode parentNode = doc.DocumentNode.SelectSingleNode("//body");
-            HtmlNode imageNode;
             HtmlNodeCollection nodeCollection = new HtmlNodeCollection(parentNode);
             foreach (var imageAndCvResult in imagesAndCvResults)
             {
-                imageNode = HtmlNode.CreateNode(
+                HtmlNode imageNode = HtmlNode.CreateNode(
                     GetImageAndCvResult(
                         imageAndCvResult.Key, 
                         imageAndCvResult.Value)
@@ -44,7 +43,7 @@ namespace Demos.Azure.CognitiveServices
             }
 
             doc.DocumentNode.AppendChildren(nodeCollection);
-            var fileName = $"{ DateTime.Now.ToString("yyyyMMdd-HHmmss") }-{ websiteUri.Host }.html";
+            var fileName = $"{ DateTime.Now :yyyyMMdd-HHmmss}-{ websiteUri.Host }.html";
             SaveToDisk(doc, fileName, folder);
         }
 

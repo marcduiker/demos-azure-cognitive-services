@@ -2,8 +2,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
+using Demos.Azure.CognitiveServices.Facades;
 
 namespace Demos.Azure.CognitiveServices
 {
@@ -12,24 +12,31 @@ namespace Demos.Azure.CognitiveServices
         public static void Main(string[] args)
         {
             string website = args.Length > 0 ? args[0] : string.Empty;
-            Run(website);
+            int analysisType = args.Length > 1 ? int.Parse(args[1]) : 0;
+            Run(website, analysisType);
         }
 
-        private static void Run(string website)
+        private static void Run(string website, int analysisType)
         {
             if (string.IsNullOrWhiteSpace(website))
             {
-                WriteInfo("Enter a valid website url:");
+                WriteInfo("Enter a website url:");
                 website = Console.ReadLine();
+            }
+
+            if (analysisType == 0)
+            {
+                WriteInfo("Perform Image Analysis [1] or OCR [2]?:");
+                analysisType = int.Parse(Console.ReadLine());
             }
 
             if (WebsiteUrlParser.TryParse(website, out Uri websiteUri))
             {
                 var websiteScraper = new WebsiteScraper(websiteUri);
-                var imageUriValues = websiteScraper.GetImageUrlsFromWebsite();
+                var imageUriValues = websiteScraper.GetImageUrlsFromWebsite().ToList();
                 if (imageUriValues.Any())
                 {
-                    var imageResultCollection = AnalyzeImages(imageUriValues).Result;
+                    var imageResultCollection = AnalyzeImages(imageUriValues, analysisType).Result;
                     HtmlFileWriter.WriteMultiple(imageResultCollection, websiteUri);
                 }
                 else
@@ -47,19 +54,30 @@ namespace Demos.Azure.CognitiveServices
             if (keyInfo.Key == ConsoleKey.R)
             {
                 Console.Clear();
-                Run(string.Empty);
+                Run(string.Empty, 0);
             }
         }
 
-        private static async Task<Dictionary<Uri, JToken>> AnalyzeImages(IEnumerable<Uri> imageUriValues)
+        private static async Task<Dictionary<Uri, JToken>> AnalyzeImages(
+            IEnumerable<Uri> imageUriValues, 
+            int analysisType)
         {
             var computerVision = new ComputerVisionFacade();
             var imageResultCollection = new Dictionary<Uri, JToken>();
-
+            Func<Uri, Task<JToken>> analysisFunction = null;
+            switch (analysisType)
+            {
+                case 1:
+                    analysisFunction = uri => computerVision.ImageAnalysis(uri);
+                    break;
+                case 2:
+                    analysisFunction = uri => computerVision.OcrAnalysis(uri);
+                    break;
+            }
             foreach (var imageUri in imageUriValues)
             {
                 WriteResult(imageUri.AbsoluteUri);
-                var cvResult = await computerVision.Analyze(imageUri);
+                var cvResult = await analysisFunction(imageUri);
                 WriteInfo("Computer Vision result:");
                 WriteResult(cvResult.ToString(Newtonsoft.Json.Formatting.Indented));
                 imageResultCollection.Add(imageUri, cvResult);

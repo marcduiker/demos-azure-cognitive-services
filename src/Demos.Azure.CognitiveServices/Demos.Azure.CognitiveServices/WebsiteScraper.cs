@@ -11,13 +11,13 @@ namespace Demos.Azure.CognitiveServices
         private readonly Uri _website;
         private readonly HtmlDocument _htmlDocument;
         private readonly int _maxImagesToScrape;
-        private const string IMG_TAG = @"//img";
-        private const string SRC_ATTRIBUTE = @"src";
-        private const string DATA_ORIGINAL_ATTRIBUTE = @"data-original";
-        private const string IMG_EXTENSION_REGEX = "(.jpg)|(.png)$";
-        private const int MAX_IMAGES = 5;
+        private const string ImgTag = @"//img";
+        private const string SrcAttribute = @"src";
+        private const string DataOriginalAttribute = @"data-original";
+        private const string ImgExtensionRegex = "(.jpg)|(.jpeg)|(.png)$";
+        private const int MaxImages = 7;
 
-        public WebsiteScraper(Uri website, int maxImagesToScrape = MAX_IMAGES)
+        public WebsiteScraper(Uri website, int maxImagesToScrape = MaxImages)
         {
             _website = website;
             HtmlWeb web = new HtmlWeb();
@@ -27,25 +27,22 @@ namespace Demos.Azure.CognitiveServices
 
         public IEnumerable<Uri> GetImageUrlsFromWebsite()
         {
-            var imageUrls = new List<Uri>();
-
-            IEnumerable<string> imageSourceValues = GetImageSourcesForAttribute(SRC_ATTRIBUTE);
-            IEnumerable<string> imageDataOriginalValues = GetImageSourcesForAttribute(DATA_ORIGINAL_ATTRIBUTE);
+            IEnumerable<string> imageSourceValues = GetImageSourcesForAttribute(SrcAttribute);
+            IEnumerable<string> imageDataOriginalValues = GetImageSourcesForAttribute(DataOriginalAttribute);
 
             List<string> allImageSourceValues = new List<string>();
             allImageSourceValues.AddRange(imageSourceValues);
             allImageSourceValues.AddRange(imageDataOriginalValues);
-            imageUrls = allImageSourceValues.Select(source => CreateUri(source)).Take(_maxImagesToScrape).ToList();
 
-            return imageUrls;
+            return  allImageSourceValues.Select(CreateUri).Distinct().Take(_maxImagesToScrape).ToList();
         }
 
         private IEnumerable<string> GetImageSourcesForAttribute(string attribute)
         {
             return _htmlDocument.DocumentNode
-                .SelectNodes($"{ IMG_TAG }/@{ attribute }")
-                ?.Where(img => Regex.IsMatch(img.Attributes[attribute].Value, IMG_EXTENSION_REGEX))
-                ?.Select(img => img.Attributes[attribute].Value) ?? new List<string>();
+                .SelectNodes($"{ ImgTag }/@{ attribute }")
+                ?.Where(img => Regex.IsMatch(img.Attributes[attribute].Value, ImgExtensionRegex))
+                .Select(img => img.Attributes[attribute].Value) ?? new List<string>();
         }
 
         private Uri CreateUri(string imageSource)
