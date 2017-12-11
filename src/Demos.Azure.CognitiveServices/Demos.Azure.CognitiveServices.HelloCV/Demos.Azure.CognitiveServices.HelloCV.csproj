@@ -6,9 +6,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="HtmlAgilityPack" Version="1.5.2-beta6" />
     <PackageReference Include="Newtonsoft.Json" Version="10.0.3" />
-    <PackageReference Include="System.Drawing.Common" Version="4.5.0-preview1-25914-04" />
   </ItemGroup>
 
 </Project>
