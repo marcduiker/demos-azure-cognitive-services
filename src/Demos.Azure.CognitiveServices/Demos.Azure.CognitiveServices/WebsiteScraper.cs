@@ -1,7 +1,9 @@
 ﻿using HtmlAgilityPack;
 using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
+using System.Net;
 using System.Text.RegularExpressions;
 
 namespace Demos.Azure.CognitiveServices
@@ -34,7 +36,7 @@ namespace Demos.Azure.CognitiveServices
             allImageSourceValues.AddRange(imageSourceValues);
             allImageSourceValues.AddRange(imageDataOriginalValues);
 
-            return  allImageSourceValues.Select(CreateUri).Distinct().Take(_maxImagesToScrape).ToList();
+            return  allImageSourceValues.Select(CreateUri).Distinct().Where(uri => IsImageLargerThanMinimum(uri.AbsoluteUri, 250)).Take(_maxImagesToScrape).ToList();
         }
 
         private IEnumerable<string> GetImageSourcesForAttribute(string attribute)
@@ -43,6 +45,19 @@ namespace Demos.Azure.CognitiveServices
                 .SelectNodes($"{ ImgTag }/@{ attribute }")
                 ?.Where(img => Regex.IsMatch(img.Attributes[attribute].Value, ImgExtensionRegex))
                 .Select(img => img.Attributes[attribute].Value) ?? new List<string>();
+        }
+
+        private static bool IsImageLargerThanMinimum(string imageSource, int minimumDimension)
+        {
+            var client= new WebClient();
+            int height;
+            using (var imageStream = client.OpenRead(imageSource))
+            {
+                var image = Image.FromStream(imageStream);
+                height = image.Height;
+            }
+        
+            return height >= minimumDimension;
         }
 
         private Uri CreateUri(string imageSource)

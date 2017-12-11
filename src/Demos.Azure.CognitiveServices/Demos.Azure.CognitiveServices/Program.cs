@@ -82,7 +82,7 @@ namespace Demos.Azure.CognitiveServices
                 WriteResult(cvResult.ToString(Newtonsoft.Json.Formatting.Indented));
                 imageResultCollection.Add(imageUri, cvResult);
 
-                await Task.Delay(250);
+                await Task.Delay(350);
             }
 
             return imageResultCollection;

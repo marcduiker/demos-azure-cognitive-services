@@ -1,0 +1,25 @@
+ASTON MARTIN DB4:
+###
+http://www.telegraph.co.uk/content/dam/cars/2016/12/20/JS116486013_Chip-Riegel-SWNScom_1_trans_NvBQzQNjv4BqhTKjZxIziUHtpodhlN0vATJGaB1706zhts6GuIxSkSY.jpg
+
+FERRARI
+###
+https://i0.wp.com/s3.amazonaws.com/scardigest/wp-content/uploads/D3S_7873.jpg
+
+BOTH
+###
+https://drive-my.ru/media/k2/items/cache/5d7e022bfc88ea606725533249e32b08_L.jpg
+
+###
+http://www.simoncars.co.uk/aston/slides/Aston%20Martin%20Lotus%20and%20Ferrari.jpg
+
+
+PREDICTION URL
+###
+POST https://southcentralus.api.cognitive.microsoft.com/customvision/v1.0/Prediction/c3949ced-4131-4386-9f41-1249113cbfbd/url?iterationId=a6d86bbb-373c-4e60-8548-99c12c880f2f
+Prediction-Key: __CUSTOM_VISION_KEY__
+Content-Type: application/json
+
+{
+    "Url": "http://www.telegraph.co.uk/content/dam/cars/2016/12/20/JS116486013_Chip-Riegel-SWNScom_1_trans_NvBQzQNjv4BqhTKjZxIziUHtpodhlN0vATJGaB1706zhts6GuIxSkSY.jpg"
+}
