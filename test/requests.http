@@ -1,0 +1,21 @@
+POST https://westeurope.api.cognitive.microsoft.com/vision/v1.0/analyze?visualFeatures=Description,Tags
+Ocp-Apim-Subscription-Key: __COMPUTER_VISION_API_KEY__
+Content-Type: application/octet-stream
+
+< ./ferrari.jpg
+
+###
+
+POST https://westeurope.api.cognitive.microsoft.com/vision/v1.0/analyze?visualFeatures=Description,Tags,Faces
+Ocp-Apim-Subscription-Key: __COMPUTER_VISION_API_KEY__
+Content-Type: application/octet-stream
+
+< ./vincent.jpg
+
+###
+
+POST https://westus.api.cognitive.microsoft.com/emotion/v1.0/recognize
+Ocp-Apim-Subscription-Key: __EMOTION_API_KEY__
+Content-Type: application/octet-stream
+
+< ./hansolo.png
