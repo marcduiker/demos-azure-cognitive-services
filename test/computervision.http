@@ -1,0 +1,48 @@
+### Analyze
+POST https://westeurope.api.cognitive.microsoft.com/vision/v1.0/analyze?visualFeatures=Description,Tags,Color
+Ocp-Apim-Subscription-Key: __COMPUTER_VISION_API_KEY__
+Content-Type: application/octet-stream
+
+< ./ferrari.jpg
+
+### Analyze with faces
+POST https://westeurope.api.cognitive.microsoft.com/vision/v1.0/analyze?visualFeatures=Categories,Description,Tags,Faces
+Ocp-Apim-Subscription-Key: __COMPUTER_VISION_API_KEY__
+Content-Type: application/octet-stream
+
+< ./vincent.jpg
+
+### Domain model: Celebrities
+POST https://westeurope.api.cognitive.microsoft.com/vision/v1.0/models/celebrities/analyze
+Ocp-Apim-Subscription-Key: __COMPUTER_VISION_API_KEY__
+Content-Type: application/octet-stream
+
+< ./britney.jpg
+
+### Describe
+POST https://westeurope.api.cognitive.microsoft.com/vision/v1.0/describe?maxCandidates=3
+Ocp-Apim-Subscription-Key: __COMPUTER_VISION_API_KEY__
+Content-Type: application/octet-stream
+
+< ./painting.jpg
+
+### Handwriting POST
+POST https://westeurope.api.cognitive.microsoft.com/vision/v1.0/recognizeText
+Ocp-Apim-Subscription-Key: __COMPUTER_VISION_API_KEY__
+Content-Type: application/octet-stream
+
+< ./handwriting.jpg
+
+### Handwriting GET
+# Replace the GUID at the end with the GUID from the Operation-Location header of the POST request.
+GET https://westeurope.api.cognitive.microsoft.com/vision/v1.0/textOperations/07cfa9a5-ca7a-4848-a5b1-0f69f373d7e8
+Ocp-Apim-Subscription-Key: __COMPUTER_VISION_API_KEY__
+
+### Emotion
+POST https://westus.api.cognitive.microsoft.com/emotion/v1.0/recognize
+Ocp-Apim-Subscription-Key: __EMOTION_API_KEY__
+Content-Type: application/json
+
+{ 
+    "url": "https://lumiere-a.akamaihd.net/v1/images/Han-Solo_1d08eb2e.jpeg"
+}
